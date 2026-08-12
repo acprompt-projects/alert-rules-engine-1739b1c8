@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AlertRule",
+  "type": "object",
+  "required": ["id", "name", "metric", "condition", "severity"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-zA-Z0-9_-]+$" },
+    "name": { "type": "string" },
+    "description": { "type": "string" },
+    "enabled": { "type": "boolean", "default": true },
+    "tags": { "type": "array", "items": { "type": "string" } },
+    "metric": {
+      "type": "object",
+      "required": ["source", "name"],
+      "additionalProperties": false,
+      "properties": {
+        "source": { "type": "string" },
+        "name": { "type": "string" },
+        "labels": { "type": "object", "additionalProperties": { "type": "string" } }
+      }
+    },
+    "condition": {
+      "type": "object",
+      "required": ["operator", "threshold", "time_window", "aggregation", "evaluation_mode"],
+      "additionalProperties": false,
+      "properties": {
+        "operator": { "enum": ["gt", "gte", "lt", "lte", "eq", "neq", "between", "outside"] },
+        "threshold": { "oneOf": [
+          { "type": "number" },
+          { "type": "array", "items": { "type": "number" }, "minItems": 2, "maxItems": 2 }
+        ]},
+        "time_window": { "type": "string", "pattern": "^\\d+[smhd]$" },
+        "aggregation": { "enum": ["avg", "min", "max", "sum", "count", "p50", "p95", "p99"] },
+        "evaluation_mode": { "enum": ["each", "window"] }
+      }
+    },
+    "severity": {
+      "type": "object",
+      "required": ["mapping", "default_level"],
+      "additionalProperties": false,
+      "properties": {
+        "mapping": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["threshold", "level"],
+            "additionalProperties": false,
+            "properties": {
+              "threshold": { "type": "number" },
+              "level": { "enum": ["critical", "warning", "info"] }
+            }
+          }
+        },
+        "default_level": { "enum": ["critical", "warning", "info"] }
+      }
+    },
+    "cooldown": { "type": "string", "pattern": "^\\d+[smhd]$", "default": "5m" },
+    "notification": {
+      "type": "object",
+      "required": ["channels"],
+      "additionalProperties": false,
+      "properties": {
+        "channels": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+        "repeat_interval": { "type": "string", "pattern": "^\\d+[smhd]$", "default": "1h" }
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    }
+  }
+}
